@@ -1,0 +1,43 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApp2
+{
+    class MatMulCalculator
+    {
+        public delegate void MatMulCompletedEventHandeler(object sender, MyOperationCompletedEventArgs e);
+        public event MatMulCompletedEventHandeler MatMulCompleted;
+        
+        public void MatMulAsync(double[,] mat1, double[,] mat2)
+        {
+            Worker worker = new Worker(MatMul);
+            worker.BeginInvoke(mat1, mat2, callback, worker);
+        }
+
+        private void callback(IAsyncResult ar)
+        {
+            Exception e = null;
+            double[,] wynik = null;
+            try
+            {
+                wynik = ((Worker)ar.AsyncState).EndInvoke(ar);
+            }
+            catch (Exception ex)
+            {
+                e = ex;
+            }
+            MatMulCompleted(this, new MyOperationCompletedEventArgs(wynik, e, false, null));
+
+        }
+
+        delegate double [,] Worker(double[,] mat1, double[,] mat2);
+        public double[,] MatMul(double[,] mat1, double[,] mat2)
+        {
+            double[,] result =new double[mat1.Length, mat2.Length];
+            return result;
+        }
+    }
+}
